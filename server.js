@@ -73,7 +73,7 @@ const SERVICE_URLS = {
   classifier: process.env.CLASSIFIER_URL || 'http://classifier.railway.internal:8000',
   parsercleaner: process.env.PARSER_CLEANER_URL || 'http://parser_cleaner.railway.internal:8000',
   responsegenerator: process.env.RESPONSE_GENERATOR_URL || 'http://response_generator.railway.internal:8000',
-  collector: process.env.COLLECTOR_URL || 'http://lemlist-collector:8000'
+  collector: process.env.COLLECTOR_URL || 'http://collector-lemlist.railway.internal:8000'
 };
 
 console.log('🔧 Service URLs configured:', SERVICE_URLS);
@@ -120,7 +120,6 @@ app.use('/api/companies', createProxyMiddleware({
 // IMPORTANT: Cette route catch-all doit être EN DERNIER
 // Proxy pour le service collecteur (catch-all pour /api) - UNIQUEMENT pour les routes non spécifiées
 app.use('/api', createProxyMiddleware({
-  target: 'http://lemlist-collector:8000',
   pathRewrite: {
     '^/api': ''
   },
@@ -132,55 +131,45 @@ app.get('/health', (req, res) => {
   res.json({ 
     status: 'OK', 
     timestamp: new Date().toISOString(),
-    services: {
-      classifier: 'http://classifier.railway.internal',
-      parsercleaner: 'http://parser_cleaner.railway.internal',
-      responsegenerator: 'http://response_generator.railway.internal',
-      collector: 'http://lemlist-collector:8000'
-    }
+    services: SERVICE_URLS
   });
 });
 
 // Route de diagnostic pour tester la connectivité aux services
 app.get('/diagnostic', async (req, res) => {
-  const servicesWithPort = {
-    'collector-8000': 'http://lemlist-collector.railway.internal:8000',
-    'collector-3000': 'http://lemlist-collector.railway.internal:3000',
-    'collector-no-port': 'http://lemlist-collector'
-  };
-  
   const results = {};
   
-  for (const [name, url] of Object.entries(servicesWithPort)) {
+  for (const [serviceName, serviceUrl] of Object.entries(SERVICE_URLS)) {
     const testResults = {};
     
-    // Test route /status
+    // Test route /status pour chaque service
     try {
-      const response = await fetch(url + '/status', { 
+      const response = await fetch(serviceUrl + '/status', { 
         method: 'GET',
         timeout: 5000 
       });
       testResults.status = {
         status: 'reachable',
         statusCode: response.status,
-        url: url + '/status'
+        url: serviceUrl + '/status'
       };
     } catch (error) {
       testResults.status = {
         status: 'unreachable',
         error: error.message,
         code: error.code,
-        url: url + '/status'
+        url: serviceUrl + '/status'
       };
     }
     
-    results[name] = testResults;
+    results[serviceName] = testResults;
   }
   
   res.json({
     timestamp: new Date().toISOString(),
     serviceTests: results,
-    note: "Testing different ports for Railway internal networking"
+    serviceUrls: SERVICE_URLS,
+    note: "Testing connectivity to all configured services"
   });
 });
 
