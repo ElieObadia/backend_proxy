@@ -120,6 +120,7 @@ app.use('/api/companies', createProxyMiddleware({
 // IMPORTANT: Cette route catch-all doit être EN DERNIER
 // Proxy pour le service collecteur (catch-all pour /api) - UNIQUEMENT pour les routes non spécifiées
 app.use('/api', createProxyMiddleware({
+  target: 'http://collector-lemlist.railway.internal:8000',
   pathRewrite: {
     '^/api': ''
   },
@@ -135,7 +136,7 @@ app.get('/health', (req, res) => {
       classifier: 'http://classifier.railway.internal',
       parsercleaner: 'http://parser_cleaner.railway.internal',
       responsegenerator: 'http://response_generator.railway.internal',
-      collector: 'lemlist-collector.railway.internal'
+      collector: 'http://collector-lemlist.railway.internal:8000'
     }
   });
 });
@@ -194,7 +195,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Backend proxy running on port ${PORT}`);
+app.listen(PORT, '::',() => {
+  console.log(`🚀 Backend proxy running on port [::]${PORT}`);
   console.log(`📋 Health check: http://localhost:${PORT}/health`);
 });
