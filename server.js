@@ -144,8 +144,8 @@ app.get('/health', (req, res) => {
 // Route de diagnostic pour tester la connectivité aux services
 app.get('/diagnostic', async (req, res) => {
   const servicesWithPort = {
-    'collector-8000': 'http://lemlist-collector.railway.internal:8000',
-    'collector-3000': 'http://lemlist-collector.railway.internal:3000',
+    'collector-primary': 'http://lemlist-collector:8000',
+    'collector-fallback': 'http://lemlist-collector:3000',
     'collector-no-port': 'http://lemlist-collector'
   };
   
@@ -180,7 +180,7 @@ app.get('/diagnostic', async (req, res) => {
   res.json({
     timestamp: new Date().toISOString(),
     serviceTests: results,
-    note: "Testing different ports for Railway internal networking"
+    note: "Testing different ports for consistent lemlist-collector service naming"
   });
 });
 
