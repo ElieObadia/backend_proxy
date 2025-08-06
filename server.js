@@ -73,7 +73,7 @@ const SERVICE_URLS = {
   classifier: process.env.CLASSIFIER_URL || 'http://classifier.railway.internal:8000',
   parsercleaner: process.env.PARSER_CLEANER_URL || 'http://parser_cleaner.railway.internal:8000',
   responsegenerator: process.env.RESPONSE_GENERATOR_URL || 'http://response_generator.railway.internal:8000',
-  collector: process.env.COLLECTOR_URL || 'http://lemlist-collector.railway.internal:8000'
+  collector: process.env.COLLECTOR_URL || 'http://lemlist-collector:8000'
 };
 
 console.log('🔧 Service URLs configured:', SERVICE_URLS);
@@ -120,7 +120,7 @@ app.use('/api/companies', createProxyMiddleware({
 // IMPORTANT: Cette route catch-all doit être EN DERNIER
 // Proxy pour le service collecteur (catch-all pour /api) - UNIQUEMENT pour les routes non spécifiées
 app.use('/api', createProxyMiddleware({
-  target: 'http://collector-lemlist.railway.internal:8000',
+  target: 'http://lemlist-collector:8000',
   pathRewrite: {
     '^/api': ''
   },
@@ -136,7 +136,7 @@ app.get('/health', (req, res) => {
       classifier: 'http://classifier.railway.internal',
       parsercleaner: 'http://parser_cleaner.railway.internal',
       responsegenerator: 'http://response_generator.railway.internal',
-      collector: 'http://collector-lemlist.railway.internal:8000'
+      collector: 'http://lemlist-collector:8000'
     }
   });
 });
@@ -146,7 +146,7 @@ app.get('/diagnostic', async (req, res) => {
   const servicesWithPort = {
     'collector-8000': 'http://lemlist-collector.railway.internal:8000',
     'collector-3000': 'http://lemlist-collector.railway.internal:3000',
-    'collector-no-port': 'http://lemlist-collector.railway.internal'
+    'collector-no-port': 'http://lemlist-collector'
   };
   
   const results = {};
